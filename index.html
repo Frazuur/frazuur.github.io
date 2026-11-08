@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Frazuur Arcade</title>
+<meta name="description" content="Silly little browser games. Pick one and play, no download.">
+<meta name="theme-color" content="#1d1220">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Chewy&family=Nunito:wght@500;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#1d1220;--bg2:#2a1a2e;--ink:#fff4ea;--muted:#d9c3cf;--gold:#f2c230;--pink:#f0a3bd;--line:rgba(255,244,234,.12)}
+*{box-sizing:border-box;margin:0}
+html{background:var(--bg)}
+body{min-height:100vh;min-height:100dvh;background:var(--bg);color:var(--ink);font-family:Nunito,system-ui,sans-serif;line-height:1.5;padding:max(28px,env(safe-area-inset-top)) max(16px,env(safe-area-inset-right)) max(40px,env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left))}
+::selection{background:var(--pink);color:var(--bg)}
+a{color:inherit}
+:focus-visible{outline:3px solid var(--gold);outline-offset:4px;border-radius:14px}
+main{max-width:1080px;margin:0 auto}
+header{padding:28px 0 36px}
+h1{font-family:Chewy,cursive;font-weight:400;font-size:clamp(52px,10vw,104px);line-height:.95;letter-spacing:.01em;color:var(--gold);text-shadow:0 5px 0 #8a5a10,0 14px 32px rgba(0,0,0,.5)}
+header p{margin-top:14px;font-size:clamp(17px,2.4vw,20px);color:var(--muted);max-width:44ch}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,320px),1fr));gap:22px}
+.game{position:relative;display:flex;flex-direction:column;text-decoration:none;background:var(--bg2);border-radius:22px;overflow:hidden;box-shadow:0 2px 0 var(--line) inset,0 16px 40px rgba(0,0,0,.35);transition:transform .35s cubic-bezier(.16,1,.3,1),box-shadow .35s cubic-bezier(.16,1,.3,1)}
+.game:hover{transform:translateY(-6px) rotate(-.6deg);box-shadow:0 2px 0 var(--line) inset,0 26px 50px rgba(0,0,0,.45)}
+.game:active{transform:translateY(-2px) scale(.99)}
+.cover{aspect-ratio:16/10;overflow:hidden;background:#cf7392}
+.cover img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .6s cubic-bezier(.16,1,.3,1)}
+.game:hover .cover img{transform:scale(1.05)}
+.body{padding:18px 20px 20px;display:flex;flex-direction:column;gap:8px;flex:1}
+.game h2{font-family:Chewy,cursive;font-weight:400;font-size:34px;line-height:1;color:var(--ink)}
+.game p{color:var(--muted);font-size:16px}
+.meta{margin-top:auto;padding-top:10px;display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:14px;color:var(--muted)}
+.play{font-family:Chewy,cursive;font-size:20px;color:var(--bg);background:var(--gold);padding:6px 18px;border-radius:999px;box-shadow:0 3px 0 #8a5a10}
+.top{border-top:1px solid var(--line);margin-top:6px;padding-top:10px;font-size:15px}
+.top ol{list-style:none;padding:0;display:flex;flex-direction:column;gap:2px;margin-top:4px}
+.top li{display:flex;justify-content:space-between;gap:10px}
+.top li span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.top b{font-weight:800;color:var(--gold);font-variant-numeric:tabular-nums}
+.top h3{font-size:13px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--pink)}
+.soon{display:grid;place-items:center;min-height:260px;border:2px dashed var(--line);border-radius:22px;color:var(--muted);text-align:center;padding:24px;font-size:17px}
+.soon strong{display:block;font-family:Chewy,cursive;font-weight:400;font-size:28px;color:var(--ink);margin-bottom:4px}
+footer{margin-top:48px;color:var(--muted);font-size:14px;text-align:center}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>Frazuur Arcade</h1>
+    <p>Silly little games that run in your browser. Tap one and play, on your phone or computer, nothing to install.</p>
+  </header>
+
+  <section class="grid" aria-label="Games">
+    <a class="game" href="/plop-catcher/">
+      <div class="cover"><img src="plop-catcher.webp" alt="Plop Catcher: a toilet in a pink bathroom waiting for falling poos" width="600" height="375"></div>
+      <div class="body">
+        <h2>Plop Catcher</h2>
+        <p>Slide the toilet to catch the falling poos. Golden ones are worth five, and the floor can only take three splats.</p>
+        <div class="top hidden" id="plop-top" hidden><h3>Top ploppers</h3><ol></ol></div>
+        <div class="meta"><span>Phone and computer</span><span class="play">Play</span></div>
+      </div>
+    </a>
+    <div class="soon"><div><strong>More on the way</strong>Got an idea for a game? Send it over.</div></div>
+  </section>
+
+  <footer>Made for friends, for fun.</footer>
+</main>
+<script>
+// live top three from the Plop Catcher leaderboard; the card works fine without it
+fetch('https://theshow-vps.pleco-rooster.ts.net:8443/scores').then(r=>r.json()).then(rows=>{
+  if(!Array.isArray(rows)||!rows.length)return;
+  const box=document.getElementById('plop-top'),ol=box.querySelector('ol');
+  rows.slice(0,3).forEach((r,i)=>{const li=document.createElement('li'),s=document.createElement('span'),b=document.createElement('b');
+    s.textContent=(i+1)+'. '+r.name;b.textContent=r.score;li.append(s,b);ol.append(li)});
+  box.hidden=false;
+}).catch(()=>{});
+</script>
+</body>
+</html>
